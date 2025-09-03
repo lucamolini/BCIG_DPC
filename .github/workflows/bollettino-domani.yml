@@ -31,6 +31,8 @@ jobs:
           python -m playwright install --with-deps chromium
 
       - name: Run script
+        id: run_script
+        continue-on-error: true        # ⬅️ continua anche se il Python fallisce
         env:
           TARGET_URL: "https://mappe.protezionecivile.gov.it/it/mappe-rischi/bollettino-di-criticita/"
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
@@ -45,3 +47,14 @@ jobs:
           ROME_HOUR_GATE: "17"
           FORCE_SEND: ${{ inputs.force_send }}
         run: python send_bollettino_domani.py
+
+      - name: Upload screenshot artifact (always)
+        if: always()                   # ⬅️ esegui comunque, anche se lo script ha fallito
+        uses: actions/upload-artifact@v4
+        with:
+          name: bollettino-domani-${{ github.run_id }}
+          path: |
+            bollettino_domani_*.png
+            bollettino_domani_latest.png
+          retention-days: 14
+          if-no-files-found: warn      # non fallire se non trova file
