@@ -1,3 +1,4 @@
+# .github/workflows/bollettino-domani.yml
 name: Screenshot bollettino di domani e invio email
 
 on:
@@ -12,32 +13,28 @@ on:
         required: false
         default: "false"
         type: choice
-        options:
-          - "false"
-          - "true"
+        options: ["false", "true"]
 
 jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install deps
         run: |
-          pip install playwright==1.46.0 requests
+          pip install playwright==1.46.0
           python -m playwright install --with-deps chromium
 
       - name: Run script
         env:
           TARGET_URL: "https://mappe.protezionecivile.gov.it/it/mappe-rischi/bollettino-di-criticita/"
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
-          SMTP_PORT: ${{ secrets.SMTP_PORT }}      # 465 (SSL) o 587 (STARTTLS)
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
@@ -45,6 +42,6 @@ jobs:
           EMAIL_SUBJECT: "Bollettino di criticità — mappa di domani"
           EMAIL_BODY: "In allegato lo screenshot della mappa (fase previsionale di domani)."
           SCREENSHOT_NAME: "bollettino_domani.png"
-          ROME_HOUR_GATE: "17"                     # invia solo alle 17:00 Europe/Rome
-          FORCE_SEND: ${{ inputs.force_send }}     # "true" per forzare invio
+          ROME_HOUR_GATE: "17"
+          FORCE_SEND: ${{ inputs.force_send }}
         run: python send_bollettino_domani.py
