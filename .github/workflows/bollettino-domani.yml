@@ -1,4 +1,3 @@
-# .github/workflows/bollettino-domani.yml
 name: Screenshot bollettino di domani e invio email
 
 on:
@@ -9,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       force_send:
-        description: "Forza invio anche fuori dall'orario 17:00 Europe/Rome?"
+        description: "Forza invio anche fuori dall’orario 17:00 Europe/Rome?"
         required: false
         default: "false"
         type: choice
@@ -18,10 +17,13 @@ on:
 jobs:
   run:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -30,9 +32,9 @@ jobs:
           pip install playwright==1.46.0
           python -m playwright install --with-deps chromium
 
-      - name: Run script
+      - name: Run script (screenshot + invio email)
         id: run_script
-        continue-on-error: true        # ⬅️ continua anche se il Python fallisce
+        continue-on-error: true            # ▶️ non bloccare il job se il Python fallisce
         env:
           TARGET_URL: "https://mappe.protezionecivile.gov.it/it/mappe-rischi/bollettino-di-criticita/"
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
@@ -44,12 +46,15 @@ jobs:
           EMAIL_SUBJECT: "Bollettino di criticità — mappa di domani"
           EMAIL_BODY: "In allegato lo screenshot della mappa (fase previsionale di domani)."
           SCREENSHOT_NAME: "bollettino_domani.png"
-          ROME_HOUR_GATE: "17"
+          ROME_HOUR_GATE: "17"             # invia solo alle 17:00 Europe/Rome
           FORCE_SEND: ${{ inputs.force_send }}
+          DEBUG_SMTP: "0"                  # metti "1" per vedere la conversazione SMTP
+          CC_EMAILS: ""                    # opzionale: es. "planning@cimafoundation.org"
+          BCC_EMAILS: ""                   # opzionale
         run: python send_bollettino_domani.py
 
       - name: Upload screenshot artifact (always)
-        if: always()                   # ⬅️ esegui comunque, anche se lo script ha fallito
+        if: always()                       # ▶️ carica comunque, anche se lo step prima è fallito
         uses: actions/upload-artifact@v4
         with:
           name: bollettino-domani-${{ github.run_id }}
@@ -57,4 +62,4 @@ jobs:
             bollettino_domani_*.png
             bollettino_domani_latest.png
           retention-days: 14
-          if-no-files-found: warn      # non fallire se non trova file
+          if-no-files-found: warn
