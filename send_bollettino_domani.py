@@ -1,5 +1,5 @@
 # send_bollettino_domani.py
-
+# send it for the love of God!
 import os
 import re
 import ssl
