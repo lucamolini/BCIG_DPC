@@ -3,8 +3,8 @@ name: Screenshot bollettino di domani e invio email
 on:
   schedule:
     # 17:00 Europe/Rome -> 15:00 UTC (ora legale) e 16:00 UTC (ora solare)
-    - cron: "0 15 * * *"
-    - cron: "0 16 * * *"
+    - cron: "0 12 * * *"
+    - cron: "0 13 * * *"
   workflow_dispatch:
     inputs:
       force_send:
