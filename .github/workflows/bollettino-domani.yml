@@ -4,7 +4,7 @@ on:
   schedule:
     # 17:00 Europe/Rome -> 15:00 UTC (ora legale) e 16:00 UTC (ora solare)
     # - cron: "0 12 * * *"
-    - cron: "0 15 * * *"
+    - cron: "17 13 * * *"
   workflow_dispatch:
     inputs:
       force_send:
